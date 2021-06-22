@@ -1,0 +1,823 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model agency {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  reply_agency reply_agency[]
+}
+
+model ajuste {
+  id                      Int           @id @default(autoincrement())
+  entrada                 Int?          @unique
+  banking                 Int?
+  fecha                   DateTime      @db.DateTime(0)
+  importe                 Float
+  concepto                String        @db.VarChar(255)
+  sisgerCode              String?       @db.VarChar(255)
+  banking_ajusteTobanking banking?      @relation(fields: [banking], references: [id])
+  bankingentry            bankingentry? @relation(fields: [entrada], references: [id])
+
+  @@index([banking], name: "IDX_DA99B804E766A51E")
+}
+
+model anexo {
+  id     Int    @id @default(autoincrement())
+  price  Float?
+  cost   Float?
+  abonos Float?
+  uNeta  Float?
+  uBruta Float?
+}
+
+model anno {
+  id     Int   @id @default(autoincrement())
+  nombre Int
+  mes    mes[]
+}
+
+model arancel {
+  id                         Int         @id @default(autoincrement())
+  capitulo                   Int?
+  um                         Int?
+  articulos                  String      @db.LongText
+  cantidad                   Int
+  arancel                    Float
+  observaciones              String      @db.LongText
+  capitulo_arancelTocapitulo capitulo?   @relation(fields: [capitulo], references: [id])
+  um_arancelToum             um?         @relation(fields: [um], references: [id])
+  mercancia                  mercancia[]
+
+  @@index([um], name: "IDX_504E145C209282A9")
+  @@index([capitulo], name: "IDX_504E145C2BA5E28F")
+}
+
+model bank {
+  id      Int     @id
+  banking banking @relation(fields: [id], references: [id])
+}
+
+model banking {
+  id                                 Int                  @id @default(autoincrement())
+  name                               String               @db.VarChar(255)
+  enabled                            Boolean
+  createdAt                          DateTime             @db.DateTime(0)
+  type                               String               @db.VarChar(255)
+  balance                            Float
+  initBalance                        Float
+  discr                              String               @db.VarChar(255)
+  ajuste                             ajuste[]
+  bank                               bank?
+  bankingentry                       bankingentry[]
+  card                               card?
+  cash                               cash?
+  extra                              extra[]
+  metodopago_banking                 metodopago_banking[]
+  traspaso_bankingTotraspaso_destino traspaso[]           @relation("bankingTotraspaso_destino")
+  traspaso_bankingTotraspaso_origen  traspaso[]           @relation("bankingTotraspaso_origen")
+  workspace_banking                  workspace_banking[]
+}
+
+model bankingentry {
+  id                                           Int       @id @default(autoincrement())
+  banking                                      Int?
+  recibo                                       Int?      @unique
+  date                                         DateTime  @db.DateTime(0)
+  details                                      String    @db.LongText
+  credit                                       Float
+  debit                                        Float
+  balance                                      Float
+  activo                                       Boolean?
+  banking_bankingTobankingentry                banking?  @relation(fields: [banking], references: [id])
+  recibo_bankingentryTorecibo                  recibo?   @relation(fields: [recibo], references: [id])
+  ajuste                                       ajuste?
+  extra                                        extra?
+  receipe                                      receipe?
+  traspaso_bankingentryTotraspaso_entryDestino traspaso? @relation("bankingentryTotraspaso_entryDestino")
+  traspaso_bankingentryTotraspaso_entryOrigen  traspaso? @relation("bankingentryTotraspaso_entryOrigen")
+
+  @@index([banking], name: "IDX_AD17BE1E766A51E")
+}
+
+model bulto {
+  id                       Int         @id @default(autoincrement())
+  concepto                 Int?
+  sisgerCode               String?     @db.VarChar(255)
+  indice                   Int
+  concepto_bultoToconcepto concepto?   @relation(fields: [concepto], references: [id])
+  mercancia                mercancia[]
+
+  @@index([concepto], name: "IDX_6F635EE5648388D0")
+}
+
+model capitulo {
+  id      Int       @id @default(autoincrement())
+  nombre  String    @db.VarChar(255)
+  numero  Int
+  arancel arancel[]
+}
+
+model card {
+  id      Int     @id
+  banking banking @relation(fields: [id], references: [id])
+}
+
+model cash {
+  id      Int     @id
+  banking banking @relation(fields: [id], references: [id])
+}
+
+model client {
+  id                                   Int            @id @default(autoincrement())
+  user                                 Int?
+  firstName                            String         @db.VarChar(255)
+  lastName                             String         @db.VarChar(255)
+  phones                               String?        @db.VarChar(255)
+  email                                String?        @db.VarChar(255)
+  createdAt                            DateTime?      @db.DateTime(0)
+  dni                                  String?        @db.VarChar(255)
+  passport                             String?        @db.VarChar(255)
+  address                              String?        @db.VarChar(255)
+  municipality                         String?        @db.VarChar(255)
+  province                             String?        @db.VarChar(255)
+  country                              String?        @db.VarChar(255)
+  cell                                 String?        @db.VarChar(255)
+  user_clientTouser                    user?          @relation(fields: [user], references: [id])
+  concepto_clientToconcepto_consignado concepto[]     @relation("clientToconcepto_consignado")
+  concepto_clientToconcepto_remitente  concepto[]     @relation("clientToconcepto_remitente")
+  document                             document[]
+  ingreso                              ingreso[]
+  phone                                phone[]
+  precioventa                          precioventa[]
+  reply                                reply[]
+  reply_client                         reply_client[]
+  voucher                              voucher[]
+
+  @@index([user], name: "IDX_C0E801638D93D649")
+}
+
+model concepto {
+  id                                 Int         @id @default(autoincrement())
+  remitente                          Int?
+  consignado                         Int?
+  fechaCreacion                      DateTime    @db.DateTime(0)
+  tipo                               String      @db.VarChar(255)
+  sisgerCode                         String?     @db.VarChar(255)
+  discr                              String      @db.VarChar(255)
+  contenedor                         Int?
+  estado                             String      @db.VarChar(255)
+  fechaHBL                           DateTime?   @db.DateTime(0)
+  expediente                         Int?
+  client_clientToconcepto_consignado client?     @relation("clientToconcepto_consignado", fields: [consignado], references: [id])
+  contenedor_conceptoTocontenedor    contenedor? @relation(fields: [contenedor], references: [id])
+  reply                              reply?      @relation(fields: [expediente], references: [id])
+  client_clientToconcepto_remitente  client?     @relation("clientToconcepto_remitente", fields: [remitente], references: [id])
+  bulto                              bulto[]
+  ena                                ena?
+  envio                              envio?
+  menaje                             menaje?
+
+  @@index([remitente], name: "IDX_9DF5EA8651A5ACA4")
+  @@index([consignado], name: "IDX_9DF5EA868F8E7CD")
+  @@index([contenedor], name: "IDX_9DF5EA86E6B58BB1")
+  @@index([expediente], name: "expediente")
+}
+
+model conceptocosto {
+  id                                 Int                   @id @default(autoincrement())
+  workspace                          Int?
+  name                               String                @db.VarChar(255)
+  workspace_conceptocostoToworkspace workspace?            @relation(fields: [workspace], references: [id])
+  costo_conceptocosto                costo_conceptocosto[]
+
+  @@index([workspace], name: "IDX_8A5985E18D940019")
+}
+
+model conceptogasto {
+  id                                 Int                   @id @default(autoincrement())
+  workspace                          Int?
+  name                               String                @db.VarChar(255)
+  workspace_conceptogastoToworkspace workspace?            @relation(fields: [workspace], references: [id])
+  gasto_conceptogasto                gasto_conceptogasto[]
+
+  @@index([workspace], name: "IDX_9F0654128D940019")
+}
+
+model contenedor {
+  id                  Int             @id @default(autoincrement())
+  tipo                Int?
+  mes                 Int?
+  codigo              String?         @db.LongText
+  sello               String?         @db.LongText
+  estado              String          @db.LongText
+  volumenM3           Float
+  maxPesoKg           Float
+  motonave            String?         @db.LongText
+  mbl                 String?         @db.LongText
+  puertoSalida        String?         @db.LongText
+  puertoEntrada       String?         @db.LongText
+  fechaEntrada        DateTime?       @db.DateTime(0)
+  fechaSalida         DateTime?       @db.DateTime(0)
+  indice              Int
+  indiceAnual         Int
+  mes_contenedorTomes mes?            @relation(fields: [mes], references: [id])
+  tipocontenedor      tipocontenedor? @relation(fields: [tipo], references: [id])
+  concepto            concepto[]
+
+  @@index([mes], name: "IDX_A9E888616EC83E05")
+  @@index([tipo], name: "IDX_A9E88861702D1D47")
+}
+
+model mes {
+  id             Int          @id @default(autoincrement())
+  anno           Int?
+  nombre         String       @db.VarChar(255)
+  numero         Int
+  anno_annoTomes anno?        @relation(fields: [anno], references: [id])
+  contenedor     contenedor[]
+
+  @@index([anno], name: "IDX_568578E5C6E493B0")
+}
+
+model costo {
+  id                  Int                   @id
+  pagueA              String                @db.VarChar(255)
+  detalles            String                @db.MediumText
+  idEgreso            Int?                  @unique
+  recibo              recibo                @relation(fields: [id], references: [id])
+  idegreso            idegreso?             @relation(fields: [idEgreso], references: [id])
+  costo_conceptocosto costo_conceptocosto[]
+}
+
+model costo_conceptocosto {
+  costo_id         Int
+  conceptocosto_id Int
+  conceptocosto    conceptocosto @relation(fields: [conceptocosto_id], references: [id])
+  costo            costo         @relation(fields: [costo_id], references: [id])
+
+  @@id([costo_id, conceptocosto_id])
+  @@index([costo_id], name: "IDX_AFA48D2C3D19862A")
+  @@index([conceptocosto_id], name: "IDX_AFA48D2C746BE358")
+}
+
+model costorecurrente {
+  id                         Int                          @id
+  pagueA                     String                       @db.VarChar(255)
+  detalles                   String                       @db.MediumText
+  idEgreso                   Int?                         @unique
+  recibo                     recibo                       @relation(fields: [id], references: [id])
+  idegreso                   idegreso?                    @relation(fields: [idEgreso], references: [id])
+  costorecurrente_inventario costorecurrente_inventario[]
+}
+
+model costorecurrente_inventario {
+  costorecurrente_id Int
+  inventario_id      Int
+  costorecurrente    costorecurrente @relation(fields: [costorecurrente_id], references: [id])
+  inventario         inventario      @relation(fields: [inventario_id], references: [id])
+
+  @@id([costorecurrente_id, inventario_id])
+  @@index([costorecurrente_id], name: "IDX_C3CE2E6F8E037CA7")
+  @@index([inventario_id], name: "IDX_C3CE2E6FDFDFBE2A")
+}
+
+model document {
+  id                      Int           @id @default(autoincrement())
+  type                    Int?
+  client                  Int?
+  url                     String?       @db.VarChar(255)
+  name                    String        @db.VarChar(255)
+  client_clientTodocument client?       @relation(fields: [client], references: [id])
+  documenttype            documenttype? @relation(fields: [type], references: [id])
+
+  @@index([type], name: "IDX_211FE8208CDE5729")
+  @@index([client], name: "IDX_211FE820C7440455")
+}
+
+model documenttype {
+  id       Int        @id @default(autoincrement())
+  url      String     @db.VarChar(255)
+  document document[]
+}
+
+model ena {
+  id           Int      @id
+  fechaEntrada DateTime @db.DateTime(0)
+  fechaSalida  DateTime @db.DateTime(0)
+  concepto     concepto @relation(fields: [id], references: [id])
+}
+
+model envio {
+  id              Int      @id
+  remitenteNombre String   @db.VarChar(255)
+  remitenteCedula String   @db.VarChar(255)
+  concepto        concepto @relation(fields: [id], references: [id])
+}
+
+model extra {
+  id                     Int           @id @default(autoincrement())
+  usuario                Int?
+  entrada                Int?          @unique
+  banking                Int?
+  fecha                  DateTime      @db.DateTime(0)
+  importe                Float
+  concepto               String        @db.VarChar(255)
+  sisgerCode             String?       @db.VarChar(255)
+  banking_bankingToextra banking?      @relation(fields: [banking], references: [id])
+  bankingentry           bankingentry? @relation(fields: [entrada], references: [id])
+  user                   user?         @relation(fields: [usuario], references: [id])
+
+  @@index([usuario], name: "IDX_8CFE22612265B05D")
+  @@index([banking], name: "IDX_8CFE2261E766A51E")
+}
+
+model gasto {
+  id                  Int                   @id
+  detalles            String                @db.MediumText
+  pagueA              String                @db.VarChar(255)
+  idEgreso            Int?                  @unique
+  recibo              recibo                @relation(fields: [id], references: [id])
+  idegreso            idegreso?             @relation(fields: [idEgreso], references: [id])
+  gasto_conceptogasto gasto_conceptogasto[]
+}
+
+model gasto_conceptogasto {
+  gasto_id         Int
+  conceptogasto_id Int
+  conceptogasto    conceptogasto @relation(fields: [conceptogasto_id], references: [id])
+  gasto            gasto         @relation(fields: [gasto_id], references: [id])
+
+  @@id([gasto_id, conceptogasto_id])
+  @@index([conceptogasto_id], name: "IDX_4ABE43B4A01E96FF")
+  @@index([gasto_id], name: "IDX_4ABE43B4E96CF38D")
+}
+
+model idegreso {
+  id              Int              @id @default(autoincrement())
+  costo           costo?
+  costorecurrente costorecurrente?
+  gasto           gasto?
+}
+
+model idingreso {
+  id      Int      @id @default(autoincrement())
+  ingreso ingreso?
+}
+
+model ingreso {
+  id              Int               @id
+  cliente         Int?
+  recibiDe        String            @db.VarChar(255)
+  detalles        String?           @db.MediumText
+  saldoAnterior   Float?
+  abono           Float?
+  saldoPendiente  Float?
+  idIngreso       Int?              @unique
+  cuentaXCobrar   Boolean
+  fechaLimite     DateTime?         @db.DateTime(0)
+  client          client?           @relation(fields: [cliente], references: [id])
+  recibo          recibo            @relation(fields: [id], references: [id])
+  idingreso       idingreso?        @relation(fields: [idIngreso], references: [id])
+  ingreso_service ingreso_service[]
+
+  @@index([cliente], name: "IDX_3261D83F41C9B25")
+}
+
+model ingreso_service {
+  ingreso_id Int
+  service_id Int
+  ingreso    ingreso @relation(fields: [ingreso_id], references: [id])
+  service    service @relation(fields: [service_id], references: [id])
+
+  @@id([ingreso_id, service_id])
+  @@index([ingreso_id], name: "IDX_50F8A6FDE70E8ADB")
+  @@index([service_id], name: "IDX_50F8A6FDED5CA9E6")
+}
+
+model ingresos_relacionados {
+  ingreso_id                                        Int
+  costo_id                                          Int
+  receipe_ingresos_relacionados_costo_idToreceipe   receipe @relation("ingresos_relacionados_costo_idToreceipe", fields: [costo_id], references: [id])
+  receipe_ingresos_relacionados_ingreso_idToreceipe receipe @relation("ingresos_relacionados_ingreso_idToreceipe", fields: [ingreso_id], references: [id])
+
+  @@id([ingreso_id, costo_id])
+  @@index([costo_id], name: "IDX_8DA616F03D19862A")
+  @@index([ingreso_id], name: "IDX_8DA616F0E70E8ADB")
+}
+
+model inventario {
+  id                              Int                          @id @default(autoincrement())
+  workspace                       Int?
+  nombre                          String                       @db.VarChar(255)
+  workspace_inventarioToworkspace workspace?                   @relation(fields: [workspace], references: [id])
+  costorecurrente_inventario      costorecurrente_inventario[]
+
+  @@index([workspace], name: "IDX_25444D258D940019")
+}
+
+model menaje {
+  id                Int      @id
+  fechaAutorizacion DateTime @db.DateTime(0)
+  concepto          concepto @relation(fields: [id], references: [id])
+}
+
+model mercancia {
+  id                         Int         @id @default(autoincrement())
+  bulto                      Int?
+  fechaCreacion              DateTime    @db.DateTime(0)
+  descripcion                String      @db.LongText
+  cantidad                   Int
+  volumenM3                  Float
+  pesoKg                     Float
+  pesoLb                     Float
+  relacion                   Float
+  arancel                    Int?
+  tarifa                     Int?
+  alturaCm                   Float
+  anchoCm                    Float
+  profundidadCm              Float
+  tarifaAlternativa          Float?
+  miRelacionada              Int?
+  arancel_arancelTomercancia arancel?    @relation(fields: [arancel], references: [id])
+  bulto_bultoTomercancia     bulto?      @relation(fields: [bulto], references: [id])
+  mercancia                  mercancia?  @relation("mercanciaTomercancia_miRelacionada", fields: [miRelacionada], references: [id])
+  tarifa_mercanciaTotarifa   tarifa?     @relation(fields: [tarifa], references: [id])
+  other_mercancia            mercancia[] @relation("mercanciaTomercancia_miRelacionada")
+
+  @@index([miRelacionada], name: "IDX_1FF8C8436555E543")
+  @@index([arancel], name: "IDX_1FF8C8439FF32DC0")
+  @@index([tarifa], name: "IDX_1FF8C843A01B5DE")
+  @@index([bulto], name: "IDX_1FF8C843AEA271E1")
+}
+
+
+model metodopago_banking {
+  banking_id       Int
+  paymentmethod_id Int
+  banking          banking       @relation(fields: [banking_id], references: [id])
+  paymentmethod    paymentmethod @relation(fields: [paymentmethod_id], references: [id])
+
+  @@id([banking_id, paymentmethod_id])
+  @@index([banking_id], name: "IDX_A6DE07B7758C76C")
+  @@index([paymentmethod_id], name: "IDX_A6DE07B7778E3E6F")
+}
+
+model nomenclador {
+  id                               Int                 @id @default(autoincrement())
+  workspace                        Int?
+  nombre                           String              @db.VarChar(255)
+  workspace_nomencladorToworkspace workspace?          @relation(fields: [workspace], references: [id])
+  usuario_escritura                usuario_escritura[]
+  usuario_lectura                  usuario_lectura[]
+
+  @@index([workspace], name: "IDX_637350368D940019")
+}
+
+model paymentmethod {
+  id                 Int                  @id @default(autoincrement())
+  url                String               @db.VarChar(255)
+  metodopago_banking metodopago_banking[]
+  receipe            receipe[]
+  recibo             recibo[]
+}
+
+model phone {
+  id                   Int     @id @default(autoincrement())
+  client               Int?
+  number               Int
+  client_clientTophone client? @relation(fields: [client], references: [id])
+
+  @@index([client], name: "IDX_858EB8D9C7440455")
+}
+
+model precioventa {
+  id                                       Int     @id @default(autoincrement())
+  expediente                               Int?
+  cliente                                  Int?
+  precio                                   Float?
+  expedienteLider                          Int?
+  client                                   client? @relation(fields: [cliente], references: [id])
+  reply_precioventa_expedienteToreply      reply?  @relation("precioventa_expedienteToreply", fields: [expediente], references: [id])
+  reply_precioventa_expedienteLiderToreply reply?  @relation("precioventa_expedienteLiderToreply", fields: [expedienteLider], references: [id])
+
+  @@index([expedienteLider], name: "IDX_C69DD82B195F051C")
+  @@index([expediente], name: "IDX_C69DD82BD59CA413")
+  @@index([cliente], name: "IDX_C69DD82BF41C9B25")
+}
+
+model receipe {
+  id                                                              Int                     @id @default(autoincrement())
+  reply                                                           Int?
+  creationDate                                                    DateTime                @db.DateTime(0)
+  importe                                                         Float
+  recibide                                                        String                  @db.VarChar(255)
+  suma                                                            String                  @db.VarChar(255)
+  concepto                                                        String                  @db.VarChar(255)
+  sisgerCode                                                      String?                 @db.VarChar(255)
+  paymentMethod                                                   Int?
+  refExpediente                                                   String?                 @db.VarChar(255)
+  activo                                                          Boolean?
+  entry                                                           Int?                    @unique
+  workspace                                                       Int?
+  type                                                            String?                 @db.VarChar(255)
+  bankingentry                                                    bankingentry?           @relation(fields: [entry], references: [id])
+  paymentmethod                                                   paymentmethod?          @relation(fields: [paymentMethod], references: [id])
+  reply_receipeToreply                                            reply?                  @relation(fields: [reply], references: [id])
+  workspace_receipeToworkspace                                    workspace?              @relation(fields: [workspace], references: [id])
+  ingresos_relacionados_ingresos_relacionados_costo_idToreceipe   ingresos_relacionados[] @relation("ingresos_relacionados_costo_idToreceipe")
+  ingresos_relacionados_ingresos_relacionados_ingreso_idToreceipe ingresos_relacionados[] @relation("ingresos_relacionados_ingreso_idToreceipe")
+
+  @@index([paymentMethod], name: "IDX_F694AF2B8484E578")
+  @@index([workspace], name: "IDX_F694AF2B8D940019")
+  @@index([reply], name: "IDX_F694AF2BFDA8C6E0")
+}
+
+model recibo {
+  id                          Int              @id @default(autoincrement())
+  usuario                     Int?
+  workspace                   Int?
+  expediente                  Int?
+  fecha                       DateTime         @db.DateTime(0)
+  importe                     Float
+  suma                        String?          @db.VarChar(255)
+  sisgerCode                  String?          @db.VarChar(255)
+  activo                      Boolean?
+  tipo                        String?          @db.VarChar(255)
+  refExpediente               String?          @db.VarChar(255)
+  metodoPago                  Int?
+  discr                       String           @db.VarChar(255)
+  motivoCancelacion           String?          @db.LongText
+  creacion                    DateTime         @db.DateTime(0)
+  firmado                     Boolean?
+  reply                       reply?           @relation(fields: [expediente], references: [id])
+  paymentmethod               paymentmethod?   @relation(fields: [metodoPago], references: [id])
+  user                        user?            @relation(fields: [usuario], references: [id])
+  workspace_reciboToworkspace workspace?       @relation(fields: [workspace], references: [id])
+  bankingentry                bankingentry?
+  costo                       costo?
+  costorecurrente             costorecurrente?
+  gasto                       gasto?
+  ingreso                     ingreso?
+
+  @@index([usuario], name: "IDX_45052DCC2265B05D")
+  @@index([metodoPago], name: "IDX_45052DCC792D02F7")
+  @@index([workspace], name: "IDX_45052DCC8D940019")
+  @@index([expediente], name: "IDX_45052DCCD59CA413")
+}
+
+model reply {
+  id                                             Int             @id @default(autoincrement())
+  user                                           Int?
+  beginDate                                      DateTime        @db.DateTime(0)
+  finishDate                                     DateTime        @db.DateTime(0)
+  pax                                            Int
+  observations                                   String?         @db.VarChar(255)
+  price                                          Int?
+  sisgerCode                                     String?         @db.VarChar(255)
+  leader                                         Int?
+  createdAt                                      DateTime        @db.DateTime(0)
+  month                                          Int
+  year                                           Int
+  workspace                                      Int?
+  client                                         client?         @relation(fields: [leader], references: [id])
+  user_replyTouser                               user?           @relation(fields: [user], references: [id])
+  workspace_replyToworkspace                     workspace?      @relation(fields: [workspace], references: [id])
+  concepto                                       concepto[]
+  precioventa_precioventa_expedienteToreply      precioventa[]   @relation("precioventa_expedienteToreply")
+  precioventa_precioventa_expedienteLiderToreply precioventa[]   @relation("precioventa_expedienteLiderToreply")
+  receipe                                        receipe[]
+  recibo                                         recibo[]
+  reply_agency                                   reply_agency[]
+  reply_client                                   reply_client[]
+  reply_service                                  reply_service[]
+  voucher                                        voucher[]
+
+  @@index([user], name: "IDX_3C69E9E48D93D649")
+  @@index([workspace], name: "IDX_3C69E9E48D940019")
+  @@index([leader], name: "IDX_3C69E9E4F5E3EAD7")
+}
+
+model reply_agency {
+  reply_id  Int
+  agency_id Int
+  agency    agency @relation(fields: [agency_id], references: [id])
+  reply     reply  @relation(fields: [reply_id], references: [id])
+
+  @@id([reply_id, agency_id])
+  @@index([reply_id], name: "IDX_79B960F68A0E4E7F")
+  @@index([agency_id], name: "IDX_79B960F6CDEADB2A")
+}
+
+model reply_client {
+  reply_id  Int
+  client_id Int
+  client    client @relation(fields: [client_id], references: [id])
+  reply     reply  @relation(fields: [reply_id], references: [id])
+
+  @@id([reply_id, client_id])
+  @@index([client_id], name: "IDX_CE3DA24519EB6921")
+  @@index([reply_id], name: "IDX_CE3DA2458A0E4E7F")
+}
+
+model reply_service {
+  reply_id   Int
+  service_id Int
+  reply      reply   @relation(fields: [reply_id], references: [id])
+  service    service @relation(fields: [service_id], references: [id])
+
+  @@id([reply_id, service_id])
+  @@index([reply_id], name: "IDX_FC23F3108A0E4E7F")
+  @@index([service_id], name: "IDX_FC23F310ED5CA9E6")
+}
+
+model role {
+  id    Int    @id @default(autoincrement())
+  name  String @db.VarChar(255)
+  alias String @db.VarChar(255)
+  user  user[]
+}
+
+model service {
+  id                           Int               @id @default(autoincrement())
+  name                         String            @db.VarChar(255)
+  workspace                    Int?
+  workspace_serviceToworkspace workspace?        @relation(fields: [workspace], references: [id])
+  ingreso_service              ingreso_service[]
+  reply_service                reply_service[]
+  voucher_service              voucher_service[]
+
+  @@index([workspace], name: "IDX_2E20A34E8D940019")
+}
+
+model tarifa {
+  id        Int         @id @default(autoincrement())
+  numero    Int
+  articulo  String      @db.LongText
+  precio    Float
+  mercancia mercancia[]
+}
+
+model tipocontenedor {
+  id         Int          @id @default(autoincrement())
+  nombre     String       @db.LongText
+  volumenM3  Float
+  pesoKg     Float
+  contenedor contenedor[]
+}
+
+model traspaso {
+  id                                               Int           @id @default(autoincrement())
+  user                                             Int?
+  origen                                           Int?
+  destino                                          Int?
+  creationDate                                     DateTime      @db.DateTime(0)
+  importe                                          Float
+  suma                                             String        @db.VarChar(255)
+  concepto                                         String        @db.VarChar(255)
+  sisgerCode                                       String?       @db.VarChar(255)
+  entryOrigen                                      Int?          @unique
+  entryDestino                                     Int?          @unique
+  banking_bankingTotraspaso_destino                banking?      @relation("bankingTotraspaso_destino", fields: [destino], references: [id])
+  bankingentry_bankingentryTotraspaso_entryDestino bankingentry? @relation("bankingentryTotraspaso_entryDestino", fields: [entryDestino], references: [id])
+  bankingentry_bankingentryTotraspaso_entryOrigen  bankingentry? @relation("bankingentryTotraspaso_entryOrigen", fields: [entryOrigen], references: [id])
+  banking_bankingTotraspaso_origen                 banking?      @relation("bankingTotraspaso_origen", fields: [origen], references: [id])
+  user_traspasoTouser                              user?         @relation(fields: [user], references: [id])
+
+  @@index([origen], name: "IDX_4956F2C072441912")
+  @@index([destino], name: "IDX_4956F2C081F64EFA")
+  @@index([user], name: "IDX_4956F2C08D93D649")
+}
+
+model um {
+  id      Int       @id @default(autoincrement())
+  nombre  String    @db.VarChar(255)
+  arancel arancel[]
+}
+
+model user {
+  id                        Int                 @id @default(autoincrement())
+  role                      Int?
+  username                  String              @unique @db.VarChar(255)
+  firstName                 String              @db.VarChar(255)
+  lastName                  String              @db.VarChar(255)
+  password                  String?             @db.VarChar(255)
+  salt                      String?             @db.VarChar(255)
+  email                     String?             @db.VarChar(255)
+  phone                     String?             @db.VarChar(255)
+  photo                     String              @db.VarChar(255)
+  letra                     String              @db.VarChar(255)
+  workspace                 Int?
+  activo                    Boolean
+  firma                     String?             @db.VarChar(255)
+  role_roleTouser           role?               @relation(fields: [role], references: [id])
+  workspace_userToworkspace workspace?          @relation(fields: [workspace], references: [id])
+  client                    client[]
+  extra                     extra[]
+  recibo                    recibo[]
+  reply                     reply[]
+  traspaso                  traspaso[]
+  usuario_escritura         usuario_escritura[]
+  usuario_lectura           usuario_lectura[]
+  voucher                   voucher[]
+
+  @@index([role], name: "IDX_2DA1797757698A6A")
+  @@index([workspace], name: "IDX_2DA179778D940019")
+}
+
+model usuario_escritura {
+  user_id        Int
+  nomenclador_id Int
+  nomenclador    nomenclador @relation(fields: [nomenclador_id], references: [id])
+  user           user        @relation(fields: [user_id], references: [id])
+
+  @@id([user_id, nomenclador_id])
+  @@index([user_id], name: "IDX_A2549460A76ED395")
+  @@index([nomenclador_id], name: "IDX_A2549460F874597B")
+}
+
+model usuario_lectura {
+  user_id        Int
+  nomenclador_id Int
+  nomenclador    nomenclador @relation(fields: [nomenclador_id], references: [id])
+  user           user        @relation(fields: [user_id], references: [id])
+
+  @@id([user_id, nomenclador_id])
+  @@index([user_id], name: "IDX_BF2C1716A76ED395")
+  @@index([nomenclador_id], name: "IDX_BF2C1716F874597B")
+}
+
+model voucher {
+  id                           Int               @id @default(autoincrement())
+  client                       Int?
+  reply                        Int?
+  beginDate                    DateTime          @db.DateTime(0)
+  finishDate                   DateTime          @db.DateTime(0)
+  creationDate                 DateTime          @db.DateTime(0)
+  pax                          Int
+  provider                     String            @db.VarChar(255)
+  sisgerCode                   String?           @db.VarChar(255)
+  user                         Int?
+  refproviders                 String?           @db.VarChar(999)
+  services                     String?           @db.LongText
+  activo                       Boolean?
+  workspace                    Int?
+  firmado                      Boolean?
+  client_clientTovoucher       client?           @relation(fields: [client], references: [id])
+  reply_replyTovoucher         reply?            @relation(fields: [reply], references: [id])
+  user_userTovoucher           user?             @relation(fields: [user], references: [id])
+  workspace_voucherToworkspace workspace?        @relation(fields: [workspace], references: [id])
+  voucher_service              voucher_service[]
+
+  @@index([user], name: "IDX_DC2F9C448D93D649")
+  @@index([workspace], name: "IDX_DC2F9C448D940019")
+  @@index([client], name: "IDX_DC2F9C44C7440455")
+  @@index([reply], name: "IDX_DC2F9C44FDA8C6E0")
+}
+
+model voucher_service {
+  voucher_id Int
+  service_id Int
+  service    service @relation(fields: [service_id], references: [id])
+  voucher    voucher @relation(fields: [voucher_id], references: [id])
+
+  @@id([voucher_id, service_id])
+  @@index([voucher_id], name: "IDX_2250B0D528AA1B6F")
+  @@index([service_id], name: "IDX_2250B0D5ED5CA9E6")
+}
+
+model workspace {
+  id                Int                 @id @default(autoincrement())
+  name              String              @db.VarChar(255)
+  enabled           Boolean
+  createdAt         DateTime            @db.DateTime(0)
+  logo              String              @db.VarChar(255)
+  fullname          String              @db.VarChar(255)
+  conceptocosto     conceptocosto[]
+  conceptogasto     conceptogasto[]
+  inventario        inventario[]
+  nomenclador       nomenclador[]
+  receipe           receipe[]
+  recibo            recibo[]
+  reply             reply[]
+  service           service[]
+  user              user[]
+  voucher           voucher[]
+  workspace_banking workspace_banking[]
+}
+
+model workspace_banking {
+  banking_id   Int
+  workspace_id Int
+  banking      banking   @relation(fields: [banking_id], references: [id])
+  workspace    workspace @relation(fields: [workspace_id], references: [id])
+
+  @@id([banking_id, workspace_id])
+  @@index([banking_id], name: "IDX_3F5B4E15758C76C")
+  @@index([workspace_id], name: "IDX_3F5B4E1582D40A1F")
+}

@@ -1,0 +1,26 @@
+{
+  "name": "sisger3_api",
+  "version": "1.0.0",
+  "description": "modules api",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.ts --exec ts-node"
+  },
+  "author": "Alberto Fernandez",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^2.25.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "typescript": "^4.3.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.10",
+    "@types/express": "^4.17.12",
+    "@types/morgan": "^1.9.2",
+    "nodemon": "^2.0.7",
+    "prisma": "^2.25.0",
+    "ts-node": "^10.0.0"
+  }
+}
