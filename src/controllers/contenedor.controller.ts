@@ -17,6 +17,7 @@ export const getContenedoresByMes = async ( req:Request, res:Response ): Promise
                 include: {
                     bulto: {
                         include: {
+                            concepto_bultoToconcepto:true,
                             mercancia: {
                                 include: {
                                     other_mercancia:true
@@ -29,9 +30,43 @@ export const getContenedoresByMes = async ( req:Request, res:Response ): Promise
         }
     })
 
-    console.log(idMes)
-    return res.json({
-        'ok': true,
-        contenedores
+
+    return res.json(contenedores)
+}
+
+export const getContenedoresById = async ( req:Request, res:Response ): Promise<Response> => {
+
+    const { id } = req.params
+
+    const contenedor = await prisma.contenedor.findUnique({
+        where:{
+            id: parseInt(id)
+        },
+        include:{
+            tipocontenedor:true,
+            concepto: {
+                include: {
+                    
+                    bulto: {
+                        include: {
+                            concepto_bultoToconcepto:{
+                                include:{
+                                    client_clientToconcepto_consignado:true,
+                                    client_clientToconcepto_remitente:true,
+                                }
+                            },
+                            mercancia: {
+                                include: {
+                                    other_mercancia:true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     })
+
+
+    return res.json(contenedor)
 }

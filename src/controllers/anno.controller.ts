@@ -12,7 +12,19 @@ export const getAnnos = async ( req:Request, res:Response ): Promise<Response> =
                 include:{
                     contenedor: {
                         include:{
-                            tipocontenedor:true
+                            tipocontenedor:true,
+                            concepto: {
+                                include:{
+                                    contenedor_conceptoTocontenedor: {
+                                        include: {
+                                            concepto:true,
+                                            
+                                            
+                                        }
+                                    }
+                                }
+                            }
+
                         }
                     }
                 }

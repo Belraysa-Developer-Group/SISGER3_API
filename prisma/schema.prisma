@@ -110,6 +110,7 @@ model bulto {
   concepto                 Int?
   sisgerCode               String?     @db.VarChar(255)
   indice                   Int
+  dentro                   Boolean     @default(false)
   concepto_bultoToconcepto concepto?   @relation(fields: [concepto], references: [id])
   mercancia                mercancia[]
 
@@ -174,10 +175,10 @@ model concepto {
   estado                             String      @db.VarChar(255)
   fechaHBL                           DateTime?   @db.DateTime(0)
   expediente                         Int?
+  client_clientToconcepto_remitente  client?     @relation("clientToconcepto_remitente", fields: [remitente], references: [id])
   client_clientToconcepto_consignado client?     @relation("clientToconcepto_consignado", fields: [consignado], references: [id])
   contenedor_conceptoTocontenedor    contenedor? @relation(fields: [contenedor], references: [id])
   reply                              reply?      @relation(fields: [expediente], references: [id])
-  client_clientToconcepto_remitente  client?     @relation("clientToconcepto_remitente", fields: [remitente], references: [id])
   bulto                              bulto[]
   ena                                ena?
   envio                              envio?
@@ -232,17 +233,6 @@ model contenedor {
 
   @@index([mes], name: "IDX_A9E888616EC83E05")
   @@index([tipo], name: "IDX_A9E88861702D1D47")
-}
-
-model mes {
-  id             Int          @id @default(autoincrement())
-  anno           Int?
-  nombre         String       @db.VarChar(255)
-  numero         Int
-  anno_annoTomes anno?        @relation(fields: [anno], references: [id])
-  contenedor     contenedor[]
-
-  @@index([anno], name: "IDX_568578E5C6E493B0")
 }
 
 model costo {
@@ -456,6 +446,16 @@ model mercancia {
   @@index([bulto], name: "IDX_1FF8C843AEA271E1")
 }
 
+model mes {
+  id             Int          @id @default(autoincrement())
+  anno           Int?
+  nombre         String       @db.VarChar(255)
+  numero         Int
+  anno_annoTomes anno?        @relation(fields: [anno], references: [id])
+  contenedor     contenedor[]
+
+  @@index([anno], name: "IDX_568578E5C6E493B0")
+}
 
 model metodopago_banking {
   banking_id       Int
