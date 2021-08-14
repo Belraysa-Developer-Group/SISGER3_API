@@ -70,3 +70,7 @@ export const getContenedoresById = async ( req:Request, res:Response ): Promise<
 
     return res.json(contenedor)
 }
+
+export const patchContenedoresById = async ( req:Request, res:Response ): Promise<Response> => {
+    return res.json("contenedor")
+}

@@ -111,6 +111,7 @@ model bulto {
   sisgerCode               String?     @db.VarChar(255)
   indice                   Int
   dentro                   Boolean     @default(false)
+  pared                    Int?        
   concepto_bultoToconcepto concepto?   @relation(fields: [concepto], references: [id])
   mercancia                mercancia[]
 
