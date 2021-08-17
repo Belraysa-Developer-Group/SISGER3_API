@@ -52,19 +52,27 @@ export const getRecipientsByContenedor = async ( req:Request, res:Response ): Pr
             tipo: tipocontenedor?.nombre,
             conceptos: await Promise.all( conceptos.map( async (concepto) =>{
 
-                let envioRemitente: client | null | envio = concepto.client_clientToconcepto_remitente;
+                let remitente: client | null = concepto.client_clientToconcepto_remitente;
 
-                if( concepto.remitente ===null || concepto.tipo === "Envio"){
+                let envioRemitente: envio | null = null;
+
+                if( concepto.remitente === null || concepto.tipo === "Envio"){
                     envioRemitente = await prisma.envio.findUnique({
                         where:{
                             id: concepto.id
                         }
                     })
+                } else if(remitente) {
+                    envioRemitente = {
+                        id: concepto.id,
+                        remitenteNombre: `${remitente.firstName} ${remitente?.lastName}`, 
+                        remitenteCedula: remitente.passport || ""
+                    }
                 }
 
                 return {
                     id: concepto.id,
-                    tipo: concepto.tipo,
+                    tipo: concepto.discr,
                     remitente:  envioRemitente,
                     consignado: {...concepto.client_clientToconcepto_consignado },
                     sisgerCode: concepto.sisgerCode,
