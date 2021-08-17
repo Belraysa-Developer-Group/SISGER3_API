@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { mailkeys as MAILCONFIG} from './keys.env';
 
 interface EmailI {
   info: {
@@ -39,7 +40,6 @@ export class EmailService implements EmailI {
   // async..await is not allowed in global scope, must use a wrapper
   async send() {
     
-
     // send mail with defined transport object
     let info = await this.transporter.sendMail(this.info);
   

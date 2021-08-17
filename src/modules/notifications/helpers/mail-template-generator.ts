@@ -78,7 +78,7 @@ export const emailHtml = (contenedorNotificationData: ContenedorNotification, co
                             <td>${concepto.consignado.email}</td>
                             <td>${concepto.bultos.length}</td>
                             <td>${mercanciaAgrupada.pesoKg.toFixed(2)}</td>   
-                            <td>${mercanciaAgrupada.volumenM3.toFixed(2)}</td>   
+                            <td>${mercanciaAgrupada.volumenM3.toFixed(3)}</td>   
                             <td>${mercanciaAgrupada.descripcion}</td>   
                             <td>${concepto.tipo}</td>   
                         </tr>`
