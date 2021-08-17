@@ -18,13 +18,13 @@ interface EmailI {
 export class EmailService implements EmailI {
 
   transporter = nodemailer.createTransport({
-    name: 'belraysatours.com',
-    host: 'mail.belraysatours.com',
-    port: 465,
-    secure: true,
+    name: MAILCONFIG.TR_NAME,
+    host: MAILCONFIG.TR_HOST,
+    port: MAILCONFIG.TR_PORT,
+    secure: MAILCONFIG.TR_SECURE,
     auth: {
-      user: 'devteam@belraysatours.com',
-      pass: 'p_m#-B2nMaDN'
+      user: MAILCONFIG.TR_USER,
+      pass: MAILCONFIG.TR_PASSWORD
     }
     // ,
     // tls: {
