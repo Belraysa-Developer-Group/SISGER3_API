@@ -2,6 +2,7 @@ import { mercancia } from '@prisma/client';
 import { ContenedorNotification, Concepto, Mercancia } from '../interfaces/send-notification-request';
 import { EmailService } from '../services/email.service';
 import { dateParser } from './date-parser';
+import { mercanciaGrouper } from './mercancia-grouper';
 
 export const emailHtml = (contenedorNotificationData: ContenedorNotification, conceptos: Concepto[])=> {
     
@@ -63,43 +64,21 @@ export const emailHtml = (contenedorNotificationData: ContenedorNotification, co
                 ${
                     conceptos.map( concepto =>{
 
-                        let mercanciaAgrupada = {
-                            pesoKg: 0,
-                            descripcion: "",
-                            volumenM3: 0,
-                        }
-
-                        concepto.bultos.map( bulto => {
-    
-                            const mercanciaAcc = bulto.mercancia.reduce((accumulator, currentValue) => {
-                                accumulator.pesoKg += currentValue.pesoKg
-                                accumulator.descripcion += ', '+ currentValue.descripcion
-                                accumulator.volumenM3 += currentValue.volumenM3
-                                
-                                return accumulator
-                            })
-
-                            mercanciaAgrupada.pesoKg += mercanciaAcc.pesoKg
-                            mercanciaAgrupada.descripcion += mercanciaAcc.descripcion
-                            mercanciaAgrupada.volumenM3 += mercanciaAcc.volumenM3
-                        })
+                        const mercanciaAgrupada = mercanciaGrouper(concepto)
                             
-    
-                        
-
                         return `
                         <tr>
                             <td>${concepto.sisgerCode}</td>
                             <td>${concepto.remitente.remitenteNombre}</td>
-                            <td>${concepto.consignatario.firstName} ${concepto.consignatario.lastName}</td>
-                            <td>${concepto.consignatario.address}, ${concepto.consignatario.municipality}, ${concepto.consignatario.province}, ${concepto.consignatario.country}</td>
-                            <td>${concepto.consignatario.dni}</td>
-                            <td>${concepto.consignatario.phones || ""}</td>
-                            <td>${concepto.consignatario.cell || ""}</td>
-                            <td>${concepto.consignatario.email}</td>
+                            <td>${concepto.consignado.firstName} ${concepto.consignado.lastName}</td>
+                            <td>${concepto.consignado.address}, ${concepto.consignado.municipality}, ${concepto.consignado.province}, ${concepto.consignado.country}</td>
+                            <td>${concepto.consignado.dni}</td>
+                            <td>${concepto.consignado.phones || ""}</td>
+                            <td>${concepto.consignado.cell || ""}</td>
+                            <td>${concepto.consignado.email}</td>
                             <td>${concepto.bultos.length}</td>
-                            <td>${mercanciaAgrupada.pesoKg}</td>   
-                            <td>${mercanciaAgrupada.volumenM3}</td>   
+                            <td>${mercanciaAgrupada.pesoKg.toFixed(2)}</td>   
+                            <td>${mercanciaAgrupada.volumenM3.toFixed(2)}</td>   
                             <td>${mercanciaAgrupada.descripcion}</td>   
                             <td>${concepto.tipo}</td>   
                         </tr>`
@@ -115,8 +94,8 @@ export const emailHeader = async (contenedorNotificationData: ContenedorNotifica
 
     const email = new EmailService({
         from: '"Logística Belraysa 👻" <devteam@belraysatours.com>', // sender address
-        to: "a.fernandez.ro7@gmail.com", // list of receivers
-        subject: `NOTIFICACIÓN DE ENVÍO DE CARGA ${conceptos[0].consignatario.email}✔`, // Subject line
+        to: "a.fernandez.ro7@gmail.com", // list of receivers, logistica@belraysatours.com
+        subject: `NOTIFICACIÓN DE ENVÍO DE CARGA ${conceptos[0].consignado.email}✔`, // Subject line
         text: "Notificación", // plain text body
         html: emailHtml(contenedorNotificationData, conceptos), // html body
     });

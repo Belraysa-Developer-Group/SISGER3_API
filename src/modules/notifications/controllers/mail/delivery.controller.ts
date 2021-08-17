@@ -4,45 +4,34 @@ import { EmailService } from "../../services/email.service"
 import { emailHtml, emailHeader } from '../../helpers/mail-template-generator';
 import { BadRequestError } from '../../../../errors/bad-request-error';
 
-interface EnviosXEmailWrapper {
+interface ConceptosXEmailWrapper {
     [key: string]: Concepto[]
 }
 
 export const sendBulkMail = async ( req:Request, res:Response ): Promise<Response> => {
 
     const contenedorNotificationData: ContenedorNotification = req.body  
-    let enviosXEmailWrapper: EnviosXEmailWrapper = {}
-    let enasMenagesXEmailWrapper: Promise<void>[] = []
+    let conceptosXEmailWrapper: ConceptosXEmailWrapper = {}
 
-    contenedorNotificationData.conceptos.map( (concepto, index) =>{
+    contenedorNotificationData.conceptos.map( (concepto) =>{
 
-        switch (concepto.tipo) {
-            case TipoConcepto.ENA || TipoConcepto.MENAJE:
-                enasMenagesXEmailWrapper.push(emailHeader(contenedorNotificationData, [concepto])) 
-                break;                    
-            ;
-            case TipoConcepto.ENVIO:
-                if(enviosXEmailWrapper[concepto.consignatario.email]){
-                    enviosXEmailWrapper[concepto.consignatario.email].push(concepto)
-                }else{
-                    enviosXEmailWrapper[concepto.consignatario.email]=[concepto] 
-                }
-                break;           
-            default:
-                break;
-        }       
+        
+        if(conceptosXEmailWrapper[concepto.consignado.email]){
+            conceptosXEmailWrapper[concepto.consignado.email].push(concepto)
+        }else{
+            conceptosXEmailWrapper[concepto.consignado.email]=[concepto] 
+        }
 
 
     })
 
-    // console.log(enviosXEmailWrapper)
+    // console.log(conceptosXEmailWrapper)
 
     try {
         
-        await Promise.all(enasMenagesXEmailWrapper!)
 
-        await Promise.all(Object.keys(enviosXEmailWrapper!).map( async email => {
-            await emailHeader(contenedorNotificationData, enviosXEmailWrapper[email])
+        await Promise.all(Object.keys(conceptosXEmailWrapper).map( async email => {
+            await emailHeader(contenedorNotificationData, conceptosXEmailWrapper[email])
         }))
 
     } catch (error) {

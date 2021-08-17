@@ -15,7 +15,7 @@ export interface Concepto {
     tipo:          TipoConcepto;
     sisgerCode:    string;
     remitente:     Remitente;
-    consignatario: Consignatario;
+    consignado:    Consignado;
     bultos:        Bulto[];
 }
 
@@ -55,7 +55,7 @@ export interface Mercancia {
     other_mercancia:   any[];
 }
 
-export interface Consignatario {
+export interface Consignado {
     id:           number;
     firstName:    string;
     lastName:     string;
